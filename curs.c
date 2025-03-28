@@ -5,6 +5,9 @@
 #include <time.h>
 #include <stdlib.h>
 
+#include <g2.h>
+#include <g2_X11.h>
+
 
 
 void merge(int arr[], int left, int mid, int right)
@@ -110,7 +113,20 @@ int main(int argc, char *argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     int elements_per_proc = n / (size - 1);
     int local_arr[elements_per_proc];
-    int sorted_arr[n + elements_per_proc]; 
+    int sorted_arr[n + elements_per_proc];
+    
+    int offset_left = 20;
+    int offset_right = 20;
+    int offset_top = 30;
+    int offset_bottom = 30;
+    int max_height = 200;
+    int el_width = 2;
+    int gap = 2;
+    int width = offset_left + offset_right + n * (el_width + gap);
+    int height = offset_top + offset_bottom + max_height;
+    int pixels[width][height];
+    
+    int d = g2_open_X11(width, height);
         
     if (rank == 0)
     {
