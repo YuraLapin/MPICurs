@@ -7,7 +7,8 @@
 
 
 
-void merge(int arr[], int left, int mid, int right) {
+void merge(int arr[], int left, int mid, int right)
+{
     int i, j, k;
     int n1 = mid - left + 1;
     int n2 = right - mid;
@@ -55,7 +56,8 @@ void merge(int arr[], int left, int mid, int right) {
 
 
 
-void merge_sort(int arr[], int left, int right) {
+void merge_sort(int arr[], int left, int right)
+{
     if (left < right) {
         int mid = left + (right - left) / 2;
 
