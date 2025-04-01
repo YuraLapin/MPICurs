@@ -89,13 +89,47 @@ void merge_sort(int arr[], int left, int right, int left_send, int right_send, i
 
 void print_array(int arr[], int n)
 {
-      printf("\n");
-      int i;
-      for (i = 0; i < n; ++i)
-      {
-          printf("%d ", arr[i]);            
-      }
-      printf("\n");
+    printf("\n");
+    int i;
+    for (i = 0; i < n; ++i)
+    {
+        printf("%d ", arr[i]);            
+    }
+    printf("\n");
+}
+
+
+
+void draw_array(int d, int arr[], int n, int width, int height, int offset_left, int offset_top, int max_height, int el_width, int gap)
+{
+    int pixels[width][height];
+    int white = g2_ink(d, 1.0, 1.0, 1.0);
+    int black = g2_ink(d, 0.0, 0.0, 0.0);
+
+    int x, y, i;
+    for (x = 0; x < width; ++x)
+    {
+        for (y = 0; y < height; ++y)
+        {
+            pixels[x][y] = white;
+        }
+    }
+
+    int start_x = offset_left;
+    for (i = 0; i < n; ++i)
+    {
+        int height = arr[i] * 2;
+        for (x = start_x; x <= start_x + el_width; ++x)
+        {
+            for (y = offset_top + max_height; y >= offset_top + max_height - height; --y)
+            {
+                pixels[x][y] = black;
+            }
+        }
+        start_x += (el_width + gap);
+    }
+
+    g2_image(d, 0.0, 0.0, (double) width, (double) height, &pixels[0][0]);
 }
 
 
@@ -126,7 +160,6 @@ int main(int argc, char *argv[])
     int height = offset_top + offset_bottom + max_height;
     int pixels[width][height];
     
-    int d = g2_open_X11(width, height);
         
     if (rank == 0)
     {
@@ -137,6 +170,10 @@ int main(int argc, char *argv[])
             printf("%d ", r);
         }
         printf("\n");
+
+        int d = g2_open_X11(width, height);
+        draw_array(d, arr, n, width, height, offset_left, offset_top, max_height, el_width, gap);
+        sleep(2);
         
         MPI_Bcast(&arr, n, MPI_INT, 0, MPI_COMM_WORLD);
         for (i = 0; i < elements_per_proc - 1; ++i)
