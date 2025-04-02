@@ -78,7 +78,7 @@ void merge_sort(int arr[], int left, int right)
 int main(int argc, char *argv[])
 {
     int i, j, k;
-    int n = 300000;
+    int n = 600000;
     int arr[n];
     srand(time(NULL));    
         
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
     
     for (i = 0; i < n; ++i)
     {
-	arr[i] = rand() % 99 + 1;
+	arr[i] = rand() % (32768 * 2) - 32768;
     }
     
     merge_sort(arr, 0, n);
