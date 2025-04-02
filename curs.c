@@ -102,7 +102,7 @@ void print_array(int arr[], int n)
 
 void draw_array(int d, int arr[], int n, int width, int height, int offset_left, int offset_top, int max_height, int el_width, int gap)
 {
-    int pixels[width][height];
+    int pixels[height][width];
     int white = g2_ink(d, 1.0, 1.0, 1.0);
     int black = g2_ink(d, 0.0, 0.0, 0.0);
 
@@ -111,25 +111,37 @@ void draw_array(int d, int arr[], int n, int width, int height, int offset_left,
     {
         for (y = 0; y < height; ++y)
         {
-            pixels[x][y] = white;
+            pixels[y][x] = white;
         }
     }
 
     int start_x = offset_left;
     for (i = 0; i < n; ++i)
     {
-        int height = arr[i] * 2;
+        
+        int height = arr[i] / (32768 / max_height);
         for (x = start_x; x <= start_x + el_width; ++x)
         {
-            for (y = offset_top + max_height; y >= offset_top + max_height - height; --y)
+            if (height > 0)
             {
-                pixels[x][y] = black;
+                for (y = offset_top + max_height; y >= offset_top + max_height - height; --y)
+                {
+                    pixels[y][x] = black;
+                }
+            }
+            else
+            {
+                for (y = offset_top + max_height; y <=  offset_top + max_height - height; ++y)
+                {
+                    pixels[y][x] = black;
+                }
             }
         }
         start_x += (el_width + gap);
     }
 
-    g2_image(d, 0.0, 0.0, (double) width, (double) height, &pixels[0][0]);
+    g2_image(d, 0.0, 0.0, width, height, &pixels[0][0]);
+    usleep(500000);
 }
 
 
@@ -138,7 +150,7 @@ int main(int argc, char *argv[])
 {
     int i, j, k;
     int rank, size;
-    int n = 20;
+    int n = 100;
     int arr[n];
     
     srand(time(NULL));    
@@ -154,22 +166,18 @@ int main(int argc, char *argv[])
     int offset_top = 30;
     int offset_bottom = 30;
     int max_height = 200;
-    int el_width = 2;
+    int el_width = 3;
     int gap = 2;
     int width = offset_left + offset_right + n * (el_width + gap);
-    int height = offset_top + offset_bottom + max_height;
-    int pixels[width][height];
+    int height = offset_top + offset_bottom + 2 * max_height;
     
         
     if (rank == 0)
     {
         for (i = 0; i < n; ++i)
         {
-            int r = rand() % 99 + 1;
-            arr[i] = r;
-            printf("%d ", r);
+            arr[i] = rand() % (32768 * 2) - 32768;
         }
-        printf("\n");
 
         int d = g2_open_X11(width, height);
         draw_array(d, arr, n, width, height, offset_left, offset_top, max_height, el_width, gap);
@@ -185,7 +193,7 @@ int main(int argc, char *argv[])
                 arr[j - elements_per_proc] = sorted_arr[j];
             }  
 
-            print_array(arr, n);
+            draw_array(d, arr, n, width, height, offset_left, offset_top, max_height, el_width, gap);
         }
         
         MPI_Gather(&local_arr, elements_per_proc, MPI_INT, &sorted_arr, elements_per_proc, MPI_INT, 0, MPI_COMM_WORLD);
@@ -197,11 +205,13 @@ int main(int argc, char *argv[])
            
         for (i = 1; i <= size - 2; ++i)
         {
-            print_array(arr, n);
+            draw_array(d, arr, n, width, height, offset_left, offset_top, max_height, el_width, gap);
             merge(arr, 0, elements_per_proc * i - 1, elements_per_proc * (i + 1) - 1);
         }
         
-        print_array(arr, n);
+        draw_array(d, arr, n, width, height, offset_left, offset_top, max_height, el_width, gap);
+	sleep(5);
+	g2_close(d);
     }
     
     else
