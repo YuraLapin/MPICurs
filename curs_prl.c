@@ -7,7 +7,7 @@
 
 
 
-void merge(int arr[], int left, int mid, int right)
+void merge(int *arr, int left, int mid, int right)
 {
     int i, j, k;
     int n1 = mid - left + 1;
@@ -61,7 +61,7 @@ void merge(int arr[], int left, int mid, int right)
 
 
 
-void merge_sort(int arr[], int left, int right)
+void merge_sort(int *arr, int left, int right)
 {
     if (left < right)
     {
@@ -80,17 +80,23 @@ int main(int argc, char *argv[])
 {
     int i, j, k;
     int rank, size;
-    int n = 600000;
-    int arr[n];
+    int start_n = 1000000;
+    int n = start_n;
     
     srand(time(NULL));    
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     
+    while (n % (size - 1) != 0)
+    {
+	++n;
+    }
+    int *arr = malloc(n * sizeof(int));
+    
     int elements_per_proc = n / (size - 1);
-    int local_arr[elements_per_proc];
-    int sorted_arr[n + elements_per_proc];
+    int *sorted_arr = malloc((n + elements_per_proc) * sizeof(int));
+    int *local_arr = malloc(elements_per_proc * sizeof(int));
         
     if (rank == 0)
     {
@@ -98,12 +104,16 @@ int main(int argc, char *argv[])
         {
             arr[i] = rand() % (32768 * 2) - 32768;
         }
-
-	double start = clock();
         
-        MPI_Bcast(&arr, n, MPI_INT, 0, MPI_COMM_WORLD);
-        MPI_Gather(&local_arr, elements_per_proc, MPI_INT, &sorted_arr, elements_per_proc, MPI_INT, 0, MPI_COMM_WORLD);
+	struct timespec tv1, tv2, dtv;
+	
+    
+	clock_gettime(CLOCK_MONOTONIC, &tv1);
         
+        MPI_Bcast(arr, n, MPI_INT, 0, MPI_COMM_WORLD);
+	
+        MPI_Gather(local_arr, elements_per_proc, MPI_INT, sorted_arr, elements_per_proc, MPI_INT, 0, MPI_COMM_WORLD);
+	
         for (i = elements_per_proc; i < n + elements_per_proc; ++i)
         {
             arr[i - elements_per_proc] = sorted_arr[i];
@@ -114,14 +124,16 @@ int main(int argc, char *argv[])
             merge(arr, 0, elements_per_proc * i - 1, elements_per_proc * (i + 1) - 1);
         }
         
-        double stop = clock();
-	double elapsed = (stop - start) / CLOCKS_PER_SEC;
-	printf("np: %d; n: %d; time: %f\n", size, n, elapsed);
+	clock_gettime(CLOCK_MONOTONIC, &tv2);
+	dtv.tv_nsec = tv2.tv_nsec - tv1.tv_nsec;
+	printf("%ld\n", tv1.tv_nsec);
+	printf("%ld\n", tv2.tv_nsec);
+	printf("%ld\n", dtv.tv_nsec);
     }
     
     else
     {
-        MPI_Bcast(&arr, n, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Bcast(arr, n, MPI_INT, 0, MPI_COMM_WORLD);
         
         int left = (rank - 1) * elements_per_proc;
         int right = rank * elements_per_proc - 1;
@@ -135,7 +147,7 @@ int main(int argc, char *argv[])
             ++k;
         }
         
-        MPI_Gather(&local_arr, elements_per_proc, MPI_INT, &arr, elements_per_proc, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Gather(local_arr, elements_per_proc, MPI_INT, arr, elements_per_proc, MPI_INT, 0, MPI_COMM_WORLD);
     }
     
     MPI_Finalize();
