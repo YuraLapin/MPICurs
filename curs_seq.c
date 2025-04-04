@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <time.h>
+#include <sys/time.h>
 #include <stdlib.h>
 
 
@@ -81,19 +81,22 @@ int main(int argc, char *argv[])
     int n = 600000;
     int arr[n];
     srand(time(NULL));    
-    
+        
     for (i = 0; i < n; ++i)
     {
 	arr[i] = rand() % (32768 * 2) - 32768;
     }
-
-    double start = clock();
+    
+    struct timeval tv1, tv2, dtv;
+    struct timezone tz;
+    
+    gettimeofday(&tv1, &tz);
     
     merge_sort(arr, 0, n);
         
-    double stop = clock();
-    double elapsed = (stop - start) / CLOCKS_PER_SEC;
-    printf("n: %d; time: %f\n", n, elapsed);
+    gettimeofday(&tv2, &tz);
+    dtv.tv_usec = tv2.tv_usec - tv1.tv_usec;
+    printf("%ld\n", n, dtv.tv_usec);
     
     return 0;
 }
