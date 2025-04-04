@@ -81,13 +81,13 @@ int main(int argc, char *argv[])
     int n = 600000;
     int arr[n];
     srand(time(NULL));    
-        
-    double start = clock();
     
     for (i = 0; i < n; ++i)
     {
 	arr[i] = rand() % (32768 * 2) - 32768;
     }
+
+    double start = clock();
     
     merge_sort(arr, 0, n);
         
