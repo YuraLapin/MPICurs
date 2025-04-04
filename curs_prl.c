@@ -94,12 +94,12 @@ int main(int argc, char *argv[])
         
     if (rank == 0)
     {
-	double start = clock();
-	
         for (i = 0; i < n; ++i)
         {
             arr[i] = rand() % (32768 * 2) - 32768;
         }
+
+	double start = clock();
         
         MPI_Bcast(&arr, n, MPI_INT, 0, MPI_COMM_WORLD);
         MPI_Gather(&local_arr, elements_per_proc, MPI_INT, &sorted_arr, elements_per_proc, MPI_INT, 0, MPI_COMM_WORLD);
