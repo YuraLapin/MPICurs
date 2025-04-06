@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <sys/time.h>
+#include <time.h>
 #include <stdlib.h>
 
 
@@ -78,8 +78,8 @@ void merge_sort(int arr[], int left, int right)
 int main(int argc, char *argv[])
 {
     int i, j, k;
-    int n = 600000;
-    int arr[n];
+    int n = 100000;
+    int *arr = malloc(n * sizeof(int));
     srand(time(NULL));    
         
     for (i = 0; i < n; ++i)
@@ -87,16 +87,14 @@ int main(int argc, char *argv[])
 	arr[i] = rand() % (32768 * 2) - 32768;
     }
     
-    struct timeval tv1, tv2, dtv;
-    struct timezone tz;
-    
-    gettimeofday(&tv1, &tz);
+    struct timespec tv1, tv2, dtv;
+    clock_gettime(CLOCK_MONOTONIC, &tv1);
     
     merge_sort(arr, 0, n);
         
-    gettimeofday(&tv2, &tz);
-    dtv.tv_usec = tv2.tv_usec - tv1.tv_usec;
-    printf("%ld\n", n, dtv.tv_usec);
+    clock_gettime(CLOCK_MONOTONIC, &tv2);
+    dtv.tv_nsec = tv2.tv_nsec - tv1.tv_nsec;
+    printf("%ld\n", dtv.tv_nsec);
     
     return 0;
 }
