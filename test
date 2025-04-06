@@ -7,5 +7,14 @@ do
   do
     mpirun -np $i curs_prl >> o_$i
   done
-  cat o_$i | awk '{s+=$1} END {print s/10}'
+  echo $i
+  cat o_$i | awk -v OFMT="%f" '{s+=$1} END {print s/10}'
 done
+
+touch o_s
+for i in $(seq 1 10);
+do
+  ./curs_seq >> o_s
+done
+echo s
+cat o_s | awk -v OFMT="%f" '{s+=$1} END {print s/10}'
