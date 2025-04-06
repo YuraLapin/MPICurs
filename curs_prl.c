@@ -1,7 +1,5 @@
 #include <mpi.h>
 #include <stdio.h>
-#include <string.h>
-
 #include <sys/time.h>
 #include <stdlib.h>
 
@@ -83,24 +81,23 @@ int main(int argc, char *argv[])
     int start_n = 1000000;
     int n = start_n;
     
-    srand(time(NULL));    
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     
     while (n % (size - 1) != 0)
     {
-	++n;
+	    ++n;
     }
-    int *arr = malloc(n * sizeof(int));
     
     int elements_per_proc = n / (size - 1);
+    int *arr = malloc(n * sizeof(int));
     int *sorted_arr = malloc((n + elements_per_proc) * sizeof(int));
     int *local_arr = malloc(elements_per_proc * sizeof(int));
         
     if (rank == 0)
     {
-	int rands[10] = {-22643, 31916, 27106, 5156, -24866, -14529, -8954, 18798, 25356, 15430};
+	    int rands[10] = {-22643, 31916, 27106, 5156, -24866, -14529, -8954, 18798, 25356, 15430};
       
         for (i = 0; i < n; ++i)
         {
@@ -108,10 +105,9 @@ int main(int argc, char *argv[])
         }
         
         struct timeval tv1, tv2;
-	gettimeofday(&tv1, NULL);
+	    gettimeofday(&tv1, NULL);
         
         MPI_Bcast(arr, n, MPI_INT, 0, MPI_COMM_WORLD);
-	
         MPI_Gather(local_arr, elements_per_proc, MPI_INT, sorted_arr, elements_per_proc, MPI_INT, 0, MPI_COMM_WORLD);
 	
         for (i = elements_per_proc; i < n + elements_per_proc; ++i)
@@ -124,15 +120,15 @@ int main(int argc, char *argv[])
             merge(arr, 0, elements_per_proc * i - 1, elements_per_proc * (i + 1) - 1);
         }
         
-	gettimeofday(&tv2, NULL);
-	long seconds = tv2.tv_sec - tv1.tv_sec;
-	long microseconds = tv2.tv_usec - tv1.tv_usec;
-	if (microseconds < 0)
-	{
-	    --seconds;
-	    microseconds += 1000000;
-	}
-	printf("%f\n", (float) (seconds * 1000000 + microseconds) / 1000000);
+        gettimeofday(&tv2, NULL);
+        long seconds = tv2.tv_sec - tv1.tv_sec;
+        long microseconds = tv2.tv_usec - tv1.tv_usec;
+        if (microseconds < 0)
+        {
+            --seconds;
+            microseconds += 1000000;
+        }
+	    printf("%f\n", (float) (seconds * 1000000 + microseconds) / 1000000);
     }
     
     else
@@ -155,9 +151,8 @@ int main(int argc, char *argv[])
     }
     
     free(arr);
-    free(local_arr);
     free(sorted_arr);
-    
+    free(local_arr);
     MPI_Finalize();
     return 0;
 }
