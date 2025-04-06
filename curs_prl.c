@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
 	    --seconds;
 	    microseconds += 1000000;
 	}
-	printf("%d\n", seconds * 1000000 + microseconds);
+	printf("%f\n", (float) (seconds * 1000000 + microseconds) / 1000000);
     }
     
     else
