@@ -1,7 +1,5 @@
 #include <stdio.h>
-#include <string.h>
-
-#include <time.h>
+#include <sys/time.h>
 #include <stdlib.h>
 
 
@@ -84,17 +82,24 @@ int main(int argc, char *argv[])
         
     for (i = 0; i < n; ++i)
     {
-	arr[i] = rand() % (32768 * 2) - 32768;
+	    arr[i] = rand() % (32768 * 2) - 32768;
     }
     
-    struct timespec tv1, tv2, dtv;
-    clock_gettime(CLOCK_MONOTONIC, &tv1);
+    struct timeval tv1, tv2;
+    gettimeofday(&tv1, NULL);
     
     merge_sort(arr, 0, n);
         
-    clock_gettime(CLOCK_MONOTONIC, &tv2);
-    dtv.tv_nsec = tv2.tv_nsec - tv1.tv_nsec;
-    printf("%ld\n", dtv.tv_nsec);
-    
+    gettimeofday(&tv2, NULL);
+    long seconds = tv2.tv_sec - tv1.tv_sec;
+    long microseconds = tv2.tv_usec - tv1.tv_usec;
+    if (microseconds < 0)
+    {
+        --seconds;
+        microseconds += 1000000;
+    }
+    printf("%f\n", (float) (seconds * 1000000 + microseconds) / 1000000);
+
+    free(arr);
     return 0;
 }
