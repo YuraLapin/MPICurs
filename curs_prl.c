@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <time.h>
+#include <sys/time.h>
 #include <stdlib.h>
 
 
@@ -100,15 +100,15 @@ int main(int argc, char *argv[])
         
     if (rank == 0)
     {
+	int rands[10] = {-22643, 31916, 27106, 5156, -24866, -14529, -8954, 18798, 25356, 15430};
+      
         for (i = 0; i < n; ++i)
         {
-            arr[i] = rand() % (32768 * 2) - 32768;
+            arr[i] = rands[i % 10];
         }
         
-	struct timespec tv1, tv2, dtv;
-	
-    
-	clock_gettime(CLOCK_MONOTONIC, &tv1);
+        struct timeval tv1, tv2;
+	gettimeofday(&tv1, NULL);
         
         MPI_Bcast(arr, n, MPI_INT, 0, MPI_COMM_WORLD);
 	
@@ -124,11 +124,15 @@ int main(int argc, char *argv[])
             merge(arr, 0, elements_per_proc * i - 1, elements_per_proc * (i + 1) - 1);
         }
         
-	clock_gettime(CLOCK_MONOTONIC, &tv2);
-	dtv.tv_nsec = tv2.tv_nsec - tv1.tv_nsec;
-	printf("%ld\n", tv1.tv_nsec);
-	printf("%ld\n", tv2.tv_nsec);
-	printf("%ld\n", dtv.tv_nsec);
+	gettimeofday(&tv2, NULL);
+	long seconds = tv2.tv_sec - tv1.tv_sec;
+	long microseconds = tv2.tv_usec - tv1.tv_usec;
+	if (microseconds < 0)
+	{
+	    --seconds;
+	    microseconds += 1000000;
+	}
+	printf("%d\n", seconds * 1000000 + microseconds);
     }
     
     else
@@ -149,6 +153,10 @@ int main(int argc, char *argv[])
         
         MPI_Gather(local_arr, elements_per_proc, MPI_INT, arr, elements_per_proc, MPI_INT, 0, MPI_COMM_WORLD);
     }
+    
+    free(arr);
+    free(local_arr);
+    free(sorted_arr);
     
     MPI_Finalize();
     return 0;
