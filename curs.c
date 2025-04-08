@@ -1,10 +1,7 @@
 #include <mpi.h>
 #include <stdio.h>
-#include <string.h>
-
 #include <time.h>
 #include <stdlib.h>
-
 #include <g2.h>
 #include <g2_X11.h>
 
